@@ -30,9 +30,10 @@ def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
 
 def get_layers(image):
     layer1 = slide_window(image, y_start_stop=[380, None], xy_window=(192, 192))
-    layer2 = slide_window(image, y_start_stop=[380, 650], x_start_stop=[100, 1200], xy_window=(128, 128))
-    layer3 = slide_window(image, y_start_stop=[380, 500], x_start_stop=[250, 1050], xy_window=(64, 64))
-    all_layers = layer1 + layer2 + layer3
+    layer2 = slide_window(image, y_start_stop=[380, 650], xy_window=(128, 128))
+    layer3 = slide_window(image, y_start_stop=[380, 600], xy_window=(96, 96))
+    layer4 = slide_window(image, y_start_stop=[380, 550], x_start_stop=[100, 1200], xy_window=(64, 64))
+    all_layers = layer1 + layer2 + layer3 + layer4
     return all_layers
 
 def search_windows(img, windows, clf, scaler, color_space='RGB',

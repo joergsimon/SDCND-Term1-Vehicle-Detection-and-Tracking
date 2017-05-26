@@ -32,7 +32,7 @@ def process_image(image):
     heat = add_heat(heat, found)
     heatmaps = push_pop(heatmaps, heat)
     av_h, len = avarage_heat(heatmaps)
-    av_h = apply_threshold(av_h, 2+len)
+    av_h = apply_threshold(av_h, 2*len)
     heatmap = np.clip(av_h, 0, 255)
     labels = label(heatmap)
     draw_img = draw_labeled_bboxes(np.copy(image), labels)
