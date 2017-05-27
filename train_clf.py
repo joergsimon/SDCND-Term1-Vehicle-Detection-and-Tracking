@@ -9,8 +9,8 @@ from helper.classification import scale_features
 vehicle_files, non_vehicle_files = read_data_set("./data")
 print(data_look(vehicle_files, non_vehicle_files))
 
-vehicle_features = extract_features(vehicle_files, cspace="HSV", use_spacial=False)
-non_vehicle_features = extract_features(non_vehicle_files, cspace="HSV", use_spacial=False)
+vehicle_features = extract_features(vehicle_files, cspace="HLS", use_spacial=False, hist_range=(0,1), cell_per_block=1)
+non_vehicle_features = extract_features(non_vehicle_files, cspace="HLS", use_spacial=False, hist_range=(0,1), cell_per_block=1)
 
 print("vehicle_features shape:", vehicle_features[0].shape)
 

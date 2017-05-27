@@ -8,11 +8,11 @@ from helper.sliding_window import get_layers, search_windows, add_heat, apply_th
 from helper.draw import draw_labeled_bboxes
 
 def search_windows_args(image, layers, clf, X_scaler):
-    return search_windows(image, layers, clf, X_scaler, color_space="HSV", spatial_feat=False, spatial_size=(16,16))
+    return search_windows(image, layers, clf, X_scaler, color_space="HLS", spatial_feat=False, hist_range=(0,256), cell_per_block=1)
 
 def push_pop(heatmaps, heat):
     heatmaps.append(heat)
-    if len(heatmaps) > 4:
+    if len(heatmaps) > 10:
         heatmaps.popleft()
     return heatmaps
 
@@ -20,6 +20,7 @@ def avarage_heat(heatmaps):
     h = list(heatmaps)
     if len(h) > 1:
         res = reduce(np.add, h)
+        res = res/len(h)
     else:
         res = h[0]
     return res, len(h)
@@ -32,7 +33,7 @@ def process_image(image):
     heat = add_heat(heat, found)
     heatmaps = push_pop(heatmaps, heat)
     av_h, len = avarage_heat(heatmaps)
-    av_h = apply_threshold(av_h, 2*len)
+    av_h = apply_threshold(av_h, 2)
     heatmap = np.clip(av_h, 0, 255)
     labels = label(heatmap)
     draw_img = draw_labeled_bboxes(np.copy(image), labels)
