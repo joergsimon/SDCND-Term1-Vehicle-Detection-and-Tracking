@@ -3,10 +3,11 @@ import numpy as np
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from skimage.feature import hog
+from scipy import stats
 
 # Helper functions:
 def color_hist(img, nbins=32, bins_range=(0, 256)):
-    # Compute the histogram of the RGB channels separately
+    # Compute the histogram of the channels separately
     rhist = np.histogram(img[:,:,0], bins=nbins, range=bins_range)
     ghist = np.histogram(img[:,:,1], bins=nbins, range=bins_range)
     bhist = np.histogram(img[:,:,2], bins=nbins, range=bins_range)
@@ -22,6 +23,8 @@ def bin_spatial(img, size=(32, 32)):
     imgcopy = img.copy()
     imgcopy = cv2.resize(imgcopy, size)
     features = imgcopy.ravel()
+    if max(features) < 2:
+        features = features / 256.0
     return features
 
 def data_look(car_list, notcar_list):
@@ -55,6 +58,7 @@ def extract_features(imgs, cspace='RGB', spatial_size=(32, 32),
                         use_spacial=True, use_hist=True, use_hog=True):
     # Create a list to append feature vectors to
     features = []
+    debug = True
     for image in imgs:
         img = mpimg.imread(image)
         imgcopy = img.copy()
@@ -62,24 +66,38 @@ def extract_features(imgs, cspace='RGB', spatial_size=(32, 32),
                                  hist_bins=hist_bins, hist_range=hist_range, orient=orient,
                                  pix_per_cell=pix_per_cell, cell_per_block=cell_per_block,
                                  hog_channel=hog_channel, vis=vis, feature_vec=feature_vec,
-                                 use_spacial=use_spacial, use_hist=use_hist, use_hog=use_hog)
+                                 use_spacial=use_spacial, use_hist=use_hist, use_hog=use_hog,
+                                 debug_output=debug)
         features.append(f)
+        debug = False
     return features
 
 def extract_features_img(img, cspace='RGB', spatial_size=(32, 32),
                         hist_bins=32, hist_range=(0, 256),
                         orient=9, pix_per_cell=8, cell_per_block=2,
                         hog_channel="ALL", vis=False, feature_vec=True,
-                        use_spacial=True, use_hist=True, use_hog=True):
+                        use_spacial=True, use_hist=True, use_hog=True,
+                        debug_output=False):
+    def debug(*args):
+        if debug_output:
+            print(args)
+
     imgcopy = img.copy()
     imgcopy_fixed_res = cv2.resize(imgcopy, (32, 32))
-    conversions = ['cv2.COLOR_RGB2HSV', 'cv2.COLOR_RGB2HLS', 'cv2.COLOR_RGB2LUV', 'cv2.COLOR_RGB2BGR']
-    conv_pos = ["HSV", "HLS", "LUV", "BRG"]
+    conversions = ['cv2.COLOR_RGB2HSV', 'cv2.COLOR_RGB2HLS', 'cv2.COLOR_RGB2LUV', 'cv2.COLOR_RGB2BGR', 'cv2.COLOR_RGB2YCrCb']
+    conv_pos = ["HSV", "HLS", "LUV", "BRG", "YCrCb"]
     if cspace != 'RGB':
         conv = eval(conversions[conv_pos.index(cspace)])
         imgcopy = cv2.cvtColor(imgcopy, conv)
+        debug("convert img to color: ", cspace)
     f1 = bin_spatial(imgcopy, size=spatial_size) if use_spacial else []
+    if use_spacial:
+        debug("num spacial features: ", len(f1))
+        debug("special describe: ", stats.describe(f1))
     _,_,_,_,f2 = color_hist(imgcopy_fixed_res, nbins=hist_bins, bins_range=hist_range) if use_hist else []
+    f2 = f2/512.0
+    debug("num hist features: ", len(f2))
+    debug("hist describe: ", stats.describe(f2))
     f3 = []
     if hog_channel == 'ALL':
         for channel in range(imgcopy_fixed_res.shape[2]):
@@ -90,5 +108,7 @@ def extract_features_img(img, cspace='RGB', spatial_size=(32, 32),
     else:
         f3 = get_hog_features(imgcopy_fixed_res[:,:,hog_channel], orient,
                     pix_per_cell, cell_per_block, vis=False, feature_vec=True)
+    debug("num hog features: ", len(f3))
+    debug("hog describe: ", stats.describe(f3))
     f = np.concatenate((f1, f2, f3))
     return f
