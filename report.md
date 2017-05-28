@@ -26,6 +26,7 @@ The goals / steps of this project are the following:
 [image12]: ./report_files/report_files/heatmap_w_history_without_threshold.png "avaraged heatmap history for 6 frames"
 [image13]: ./report_files/report_files/heatmap_w_history_thresh.png "thresholded avaraged heatmap for 6 frames"
 [image14]: ./report_files/report_files/bbox_6images.png "found final bounding box in 6 frames"
+[image15]: ./report_files/report_files/label_6images.png "label algorithm output for 6 frames"
 [video1]: ./report_files/must-be-overfitting.mp4 "example of the raw detected boxes of the overfitting of the LinearSVC"
 [video2]: ./report_files/less-overfitting-clf.mp4 "example of a less overfitting model of a SVC with decision shape ovo and RBF Kernel"
 ## Basic organization in the project
@@ -351,7 +352,7 @@ this keeps a memory of false positives, but also gives them a way smaller weight
 
 ### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
 
-![alt text][image6]
+![output of the labels algorithm for this 6 frames][image15]
 
 ### Here the resulting bounding boxes are drawn onto the last frame in the series:
 
