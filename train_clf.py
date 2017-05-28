@@ -1,7 +1,5 @@
 import numpy as np
 import pickle
-from sklearn.svm import LinearSVC
-import sklearn.linear_model as linear
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 from helper.io import read_data_set
@@ -36,7 +34,7 @@ for name, clf, score in fit_all:
     print('---------------------------------------')
     print(confusion_matrix(y_test, pred))
 
-#with open('svc.p', 'wb') as f:
-#    pickle.dump(clf, f)
-#with open('scaler.p', 'wb') as f:
-#    pickle.dump(X_scaler, f)
+with open('all_clfs.p', 'wb') as f:
+    pickle.dump(fit_all, f)
+with open('scaler.p', 'wb') as f:
+    pickle.dump(X_scaler, f)

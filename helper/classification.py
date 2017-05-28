@@ -21,7 +21,6 @@ def get_clf_candidates():
                    ("nn", nc.NearestCentroid()),
                    ("lr(l1)", lm.LogisticRegression(penalty='l1')),
                    ("sgd[hinge]", lm.SGDClassifier(loss="hinge", penalty="l2")),
-                   ("navie bayse", nb.MultinomialNB()),
                    ("decision tree", tree.DecisionTreeClassifier()),
                    ("random forrest", em.RandomForestClassifier(n_estimators=10)),
                    ("ada boost", em.AdaBoostClassifier(n_estimators=100)),
@@ -38,7 +37,6 @@ def fit_classifier(values, labels, classifiers):
     kf = ms.KFold(n_splits=5)
     result = []
     for clf_name, clf_candidate in classifiers:
-        print("KFold fit {}".format(clf_name))
         # decide: we should return the best model for each classifier here?
         # and do we pickle them?
         s = 0
@@ -50,7 +48,6 @@ def fit_classifier(values, labels, classifiers):
             clf_candidate.fit(X_train, y_train)
             p = clf_candidate.predict(X_ct)
             s += accuracy_score(y_ct, p)
-            print('fold accuracy: {:.3f}'.format(s))
         s /= 5.0
         print(clf_name, ' has {:.3f}'.format(s))
         result.append((clf_name, clf_candidate, s))
