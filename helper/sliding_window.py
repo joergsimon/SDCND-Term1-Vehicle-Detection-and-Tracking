@@ -74,3 +74,34 @@ def apply_threshold(heatmap, threshold):
     heatmap[heatmap <= threshold] = 0
     # Return thresholded map
     return heatmap
+
+def search_labeled_bboxes_images(img, labels, clf, scaler, color_space='RGB',
+                    spatial_size=(32, 32), hist_bins=32,
+                    hist_range=(0, 256), orient=9,
+                    pix_per_cell=8, cell_per_block=2,
+                    hog_channel="ALL", spatial_feat=True,
+                    hist_feat=True, hog_feat=True):
+    on_car = []
+    # Iterate through all detected cars
+    for car_number in range(1, labels[1]+1):
+        # Find pixels with each car_number label value
+        nonzero = (labels[0] == car_number).nonzero()
+        # Identify x and y values of those pixels
+        nonzeroy = np.array(nonzero[0])
+        nonzerox = np.array(nonzero[1])
+        # Define a bounding box based on min/max x and y
+        bbox = ((np.min(nonzerox), np.min(nonzeroy)), (np.max(nonzerox), np.max(nonzeroy)))
+        test_img = cv2.resize(img[bbox[0][1]:bbox[1][1], bbox[0][0]:bbox[1][0]], (64, 64))
+        features = extract_features_img(test_img, cspace=color_space, spatial_size=spatial_size,
+                                        hist_bins=hist_bins, hist_range=hist_range, orient=orient,
+                                        pix_per_cell=pix_per_cell, cell_per_block=cell_per_block,
+                                        hog_channel=hog_channel, use_spacial=spatial_feat,
+                                        use_hist=hist_feat, use_hog=hog_feat)
+        # 5) Scale extracted features to be fed to classifier
+        test_features = scaler.transform(np.array(features).reshape(1, -1))
+        # 6) Predict using your classifier
+        prediction = clf.predict(test_features)
+        # 7) If positive (prediction == 1) then save the window
+        if prediction == 1:
+            on_car.append(bbox)
+    return on_car
