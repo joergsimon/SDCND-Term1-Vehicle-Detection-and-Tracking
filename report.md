@@ -22,7 +22,7 @@ The goals / steps of this project are the following:
 [image8]: ./report_files/less-overfitting_example.png "example of the same image with a classifier less overfitting"
 [image9]: ./report_files/stacked_grids.png "Search window stacked grids"
 [image10]: ./report_files/found_boxes_6frames.png "found boxes by random forrest for 6 frames"
-[image11]: ./report_files/direct_headmap.png.png "direct heatmap from the bounding boxes"
+[image11]: ./report_files/direct_headmap.png "direct heatmap from the bounding boxes"
 [image12]: ./report_files/heatmap_w_history_without_threshold.png "avaraged heatmap history for 6 frames"
 [image13]: ./report_files/heatmap_w_history_thresh.png "thresholded avaraged heatmap for 6 frames"
 [image14]: ./report_files/bbox_6images.png "found final bounding box in 6 frames"
