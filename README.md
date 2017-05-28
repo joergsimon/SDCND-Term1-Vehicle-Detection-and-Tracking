@@ -26,4 +26,6 @@ The following files are important for the project:
 * [project_video.mp4](./project_video.mp4) (base video for later annotation)
 * [result_video.mp4](./result_video.mp4) (final resulting video)
 
+Important: To train the classifier datasets with vehicles and non vehicles are expected to be inside a data folder on the root! Originally the dataset was included, but I could not submitt the project to review with the dataset. I will probably add it after review again.
+
 The video annotation is done with the script [`detect_and_track.py`](./detect_and_track.py). It has the values of the input video and the resulting video hardcoded, so if you want to change it, you have to change it in code.
