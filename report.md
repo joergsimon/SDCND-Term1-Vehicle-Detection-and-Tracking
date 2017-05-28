@@ -21,6 +21,11 @@ The goals / steps of this project are the following:
 [image7]: ./report_files/linSVC_overfittet_example.png "example of the overfitting of the LinearSVC"
 [image8]: ./report_files/less-overfitting_example.png "example of the same image with a classifier less overfitting"
 [image9]: ./report_files/stacked_grids.png "Search window stacked grids"
+[image10]: ./report_files/report_files/found_boxes_6frames.png "found boxes by random forrest for 6 frames"
+[image11]: ./report_files/report_files/direct_headmap.png.png "direct heatmap from the bounding boxes"
+[image12]: ./report_files/report_files/heatmap_w_history_without_threshold.png "avaraged heatmap history for 6 frames"
+[image13]: ./report_files/report_files/heatmap_w_history_thresh.png "thresholded avaraged heatmap for 6 frames"
+[image14]: ./report_files/report_files/bbox_6images.png "found final bounding box in 6 frames"
 [video1]: ./report_files/must-be-overfitting.mp4 "example of the raw detected boxes of the overfitting of the LinearSVC"
 [video2]: ./report_files/less-overfitting-clf.mp4 "example of a less overfitting model of a SVC with decision shape ovo and RBF Kernel"
 ## Basic organization in the project
@@ -92,7 +97,7 @@ Since the heatmap could not take care of such a severe problem in the classifier
 | Ada Boost             | n_estimators=100              | 98.6%                     			|
 | Gradient Boost        | n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0              | 98.3%                     			|
 
-This is already interesting as it shows that several alternatives with similar ranges exist, and maybe one of them is not overfitting. The overfitting is likely on some features which diversify in this set only, because the LinearSVM had 97.4% on the validation set in the first try. Hoewever, maybe we get an idea if we now on the validation set compute the exact classification result and confusion matrix for each of the classifiers. This is shown in the next part:
+This is already interesting as it shows that several alternatives with similar ranges exist, and maybe one of them is not overfitting. The overfitting is likely on some features which diversify in this set only, because the LinearSVM had 97.4% on the validation set in the first try. Hoewever, maybe we get an idea if we now on the validation set compute the exact classification result and confusion matrix for each of the classifiers. The end of the script in `train_clf.py` of the notebook computes detailed results. This is shown in the next part:
 
 ---
 
@@ -298,49 +303,68 @@ You can see that the Linear SVM does not have the highes precision or recall. So
 
 [Video of the detected bounding boxes of the SVM with RBF kernel][image8]
 
-###Sliding Window Search
+### Sliding Window Search
 
-####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+#### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+The test dataset has images of whole vehicles or non vehicles. While driving the car slides towards the horizon changing size in the picture. To be able to catch the whole process therefor a algorithm must be able to capture the car at most of these positions. However, having all kinds of resolutions over the complete window is computationally a bad idea.
 
-![alt text][image3]
+No vehicles will appear in the upper part of the images, so we can ignore the search space there. Small vehicles will appear more in the middle of the image as this is where the horizon goes, and not at the bottom of the image, there only larger cars can be found. To capture this effect of the perspective grids with different resolutions (192x192, 128x128, 96x96, 64x64) all with 50% overlapp are stacked over each other. All start approximately at the horizon, but the high gets smaller the smaller the grid is. The next image visualizes this strategy.
 
-####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
+![Sliding window search grids][image9]
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+#### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-![alt text][image4]
+Taking 6 frames out of the window and into the notebook allowed me to explore the effect of classifiers pretty well. it was interesting to see that the general numbers reportet in section one did not have that much of an influence. In the end NearestCentroid, Logistic Regression, Random Forrest and Gradient Boost had the most meaningful per frame performance in this 6 frames, something which I would never have guessed with the results above. Also at first I tried just rendering the whole pipeline. May things happen there so the influence of the classifier was not that clear, having these 6 frames really helped me in that regard. For the final video I then did choose the Random Forrest classifier. While beeing an esamble classifier it still was not that slow and had the best detection based on visual inspection.
+
 ---
 
 ### Video Implementation
 
-####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
+Here's a [link to my video result](./result_video.mp4)
 
 
-####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
+#### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap. I kept a queue of the raw heatmaps over the last 10 frames, and computed the avarage of them. I then thresholded that avaraged map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
 
 Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
 
+### Here are six frames and their windows found by random forrest:
+
+![windows found by random forrest][image10]
+
 ### Here are six frames and their corresponding heatmaps:
 
-![alt text][image5]
+This images shows the directly computed heatmaps from each frame
+
+![heatmap direct][image11]
+
+10 frames are kept and avaraged
+
+![heatmap avaraged over history][image12]
+
+this keeps a memory of false positives, but also gives them a way smaller weight after the araraging. So we threshold with 0.9 to get them out.
+
+![thresholded avaraged heatmap][image13]
 
 ### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
+
 ![alt text][image6]
 
 ### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
 
-
+![final bounding box][image14]
 
 ---
 
-###Discussion
+### Discussion
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+For the winning video I used an essamble classifier (Ramdon Forrest). While that works really well, it is not as fast as a linear SVM. If that should be used for real time detection strong hardware would be needed increasing the costs. I did also not optimize the computation of HOG features as adviced in the course as this would have led to a too large change in code given the time. This would also speed up the computation a lot and help. So overall performance is an issue of my approach.
+
+Additionally to that I think that the strategy of the sliding window could be optimized by making it more dynamic. F.e. you could train a classifier for a quick rought detection of a vehicle in a larger space and if that is detected refine the grid dynamically. Or moving the grid around maybe.
+
+When two vehicles cross each other, the current algorithm merges the two vehicles to one because of the heatmap. Remembering the number of vehicles and move their centroids would help a lot here (unless one car takes a turn when he is shadowed by the other car, then the could would stay wrong for the reminder of the first car beeing present). Another option would be to not use the label algorithm but maybe some other clustering method to see if it finds better clusters.
