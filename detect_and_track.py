@@ -49,9 +49,9 @@ with open('scaler.p', 'rb') as f:
 
 heatmaps = deque([])
 
-#clip1 = VideoFileClip("./project_video.mp4", audio=False).subclip(t_start=27, t_end=39)
-clip1 = VideoFileClip("./project_video.mp4", audio=False)
+clip1 = VideoFileClip("./project_video.mp4", audio=False).subclip(t_start=40, t_end=43)
+#clip1 = VideoFileClip("./project_video.mp4", audio=False)
 print("--> start processing")
 white_clip = clip1.fl_image(process_image)
-white_clip.write_videofile("./result_video.mp4", audio=False)
+white_clip.write_videofile("./result_video-test.mp4", audio=False)
 print("--> finished")

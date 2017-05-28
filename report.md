@@ -27,6 +27,7 @@ The goals / steps of this project are the following:
 [image13]: ./report_files/heatmap_w_history_thresh.png "thresholded avaraged heatmap for 6 frames"
 [image14]: ./report_files/bbox_6images.png "found final bounding box in 6 frames"
 [image15]: ./report_files/label_6images.png "label algorithm output for 6 frames"
+[image16]: ./report_files/postprocessing.png "use the result of the labels algorithm to classify again"
 [video1]: ./report_files/must-be-overfitting.mp4 "example of the raw detected boxes of the overfitting of the LinearSVC"
 [video2]: ./report_files/less-overfitting-clf.mp4 "example of a less overfitting model of a SVC with decision shape ovo and RBF Kernel"
 ## Basic organization in the project
@@ -358,6 +359,14 @@ this keeps a memory of false positives, but also gives them a way smaller weight
 
 ![final bounding box][image14]
 
+
+### Postprocessing 
+
+Additonaly to all the steps above I had one other idea since the video was still not working that well: The labels algorithm gives relatively nice bounding boxes. So after this algorithm use this boxes to classify these regons again, and add the result to the headmaps.
+
+The result of this classification is shown here:
+![classification of bounding boxes from the labels step][image16]
+
 ---
 
 ### Discussion
@@ -367,5 +376,7 @@ this keeps a memory of false positives, but also gives them a way smaller weight
 For the winning video I used an essamble classifier (Ramdon Forrest). While that works really well, it is not as fast as a linear SVM. If that should be used for real time detection strong hardware would be needed increasing the costs. I did also not optimize the computation of HOG features as adviced in the course as this would have led to a too large change in code given the time. This would also speed up the computation a lot and help. So overall performance is an issue of my approach.
 
 Additionally to that I think that the strategy of the sliding window could be optimized by making it more dynamic. F.e. you could train a classifier for a quick rought detection of a vehicle in a larger space and if that is detected refine the grid dynamically. Or moving the grid around maybe.
+
+My method to classify the reagons found by the labels procedure and add them gives problems in the frames where cars overlapp.
 
 When two vehicles cross each other, the current algorithm merges the two vehicles to one because of the heatmap. Remembering the number of vehicles and move their centroids would help a lot here (unless one car takes a turn when he is shadowed by the other car, then the could would stay wrong for the reminder of the first car beeing present). Another option would be to not use the label algorithm but maybe some other clustering method to see if it finds better clusters.
